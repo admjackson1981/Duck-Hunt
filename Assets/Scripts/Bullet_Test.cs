@@ -8,39 +8,76 @@ public class Bullet_Test : MonoBehaviour
 {
     public bool canTrigger;
     public bool triggerButton;
-   
+    public AudioClip emptyShot;
+    public AudioClip reload;
+    public List<UnityEngine.XR.InputDevice> leftHandControllers = new List<UnityEngine.XR.InputDevice>();
 
+    private int gunShots = 2;
+    private bool primaryButton;
     private bool onTarget = false;
     private RaycastHit hit;
-     AudioSource audiosource;
-     public List<UnityEngine.XR.InputDevice> leftHandControllers = new List<UnityEngine.XR.InputDevice>();
+    private AudioSource audiosource;
+    private bool canReload = false;
+    private bool gunInHand = false;
     // Start is called before the first frame update
     void Start()
     {
-      
         audiosource = GetComponent<AudioSource>();
-       
         var desiredCharaterisitcs = UnityEngine.XR.InputDeviceCharacteristics.HeldInHand | UnityEngine.XR.InputDeviceCharacteristics.Left | UnityEngine.XR.InputDeviceCharacteristics.Controller;
         UnityEngine.XR.InputDevices.GetDevicesWithCharacteristics(desiredCharaterisitcs, leftHandControllers);
-
-     
-
-
+       
     }
 
     // Update is called once per frame
     void Update()
     {
+       
         leftHandControllers[0].TryGetFeatureValue(CommonUsages.triggerButton, out triggerButton);
-      
+        leftHandControllers[0].TryGetFeatureValue(CommonUsages.primaryButton, out primaryButton);
 
-        if (triggerButton)
+        // mechanis, for stoppging repeated re-load
+        if(gunInHand && !primaryButton)
         {
-            audiosource.Play();
+            canReload = true;
         }
 
-     
+        //this mechanism stops rapud firing based on holding down the trigger. 
+        if (gunInHand && !triggerButton)
+        {
+            canTrigger = true;
+        }
+
+        if (primaryButton && canReload)
+        {
+            Reload();
+
+        }
+
        
+        if(gunInHand && triggerButton && gunShots == 0 && canTrigger )
+             {
+           
+            audiosource.PlayOneShot(emptyShot);
+          
+            canTrigger = false;
+             }
+        if (gunInHand && triggerButton && gunShots > 0 && canTrigger)
+        {
+
+            audiosource.Play();
+            gunShots -= 1;
+
+        }
+
+
+
+    }
+    void Reload()
+    {
+        audiosource.PlayOneShot(reload);
+        gunShots = 2;
+        canReload = false;
+
     }
     void FixedUpdate()
     {
@@ -53,11 +90,12 @@ public class Bullet_Test : MonoBehaviour
             onTarget = true;
          
 
-            if (canTrigger && triggerButton)
+            if (gunInHand && triggerButton && gunShots > 0)
             {
-
-                // StartCoroutine("ShotEffect");
+                canTrigger = false;
+             
                 DestroyDuck();
+               
 
             }
         }
@@ -68,9 +106,8 @@ public class Bullet_Test : MonoBehaviour
     {   
         if(onTarget)
         {
-           
-          
 
+            Debug.Log(gunShots);
             Rigidbody Remove = hit.transform.GetComponent<Rigidbody>();
             Remove.useGravity = true;
             Remove.isKinematic = false;
@@ -81,12 +118,17 @@ public class Bullet_Test : MonoBehaviour
 
         }
           
-         
+     
         
     }
+  
     public void poo(bool d)
     {
         canTrigger = d;
+    }
+    public void holdingGun(bool holding)
+    {
+        gunInHand = holding;
     }
    
 }
