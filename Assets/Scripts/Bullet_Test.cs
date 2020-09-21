@@ -12,7 +12,7 @@ public class Bullet_Test : MonoBehaviour
     public AudioClip reload;
     public List<UnityEngine.XR.InputDevice> leftHandControllers = new List<UnityEngine.XR.InputDevice>();
 
-    private int gunShots = 2;
+    public int gunShots = 2;
     private bool primaryButton;
     private bool onTarget = false;
     private RaycastHit hit;
@@ -35,7 +35,7 @@ public class Bullet_Test : MonoBehaviour
         leftHandControllers[0].TryGetFeatureValue(CommonUsages.triggerButton, out triggerButton);
         leftHandControllers[0].TryGetFeatureValue(CommonUsages.primaryButton, out primaryButton);
 
-        // mechanis, for stoppging repeated re-load
+        // mechanics, for stoppging repeated re-load
         if(gunInHand && !primaryButton)
         {
             canReload = true;
@@ -61,11 +61,13 @@ public class Bullet_Test : MonoBehaviour
           
             canTrigger = false;
              }
+
         if (gunInHand && triggerButton && gunShots > 0 && canTrigger)
         {
 
             audiosource.Play();
             gunShots -= 1;
+           
 
         }
 
@@ -82,24 +84,27 @@ public class Bullet_Test : MonoBehaviour
     void FixedUpdate()
     {
             
-          int layerMask = 1 << 8;
-        // Debug.DrawRay(transform.position, transform.forward, Color.yellow);
+            int layerMask = 1 << 8;
+       
         
             if (Physics.Raycast(transform.position, transform.forward, out hit,Mathf.Infinity, layerMask))
-        {
-            onTarget = true;
-         
-
-            if (gunInHand && triggerButton && gunShots > 0)
             {
-                canTrigger = false;
+                onTarget = true;
              
-                DestroyDuck();
-               
+                if (gunInHand && triggerButton && canTrigger)
+                {
+                    canTrigger = false;
+                 
+                    DestroyDuck();
+                   
 
+                }
             }
-        }
-        onTarget = false;
+        else
+          {
+            onTarget = false;
+          }
+            
         
     }
     void DestroyDuck()
@@ -107,7 +112,7 @@ public class Bullet_Test : MonoBehaviour
         if(onTarget)
         {
 
-            Debug.Log(gunShots);
+           
             Rigidbody Remove = hit.transform.GetComponent<Rigidbody>();
             Remove.useGravity = true;
             Remove.isKinematic = false;
