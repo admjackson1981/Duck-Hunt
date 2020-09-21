@@ -24,17 +24,17 @@ public class SpawnScript : MonoBehaviour
     }
     void FixedUpdate()
     {
-       // if(gm.Level == 1)
-       // {
-       //     spawnTime = Random.Range(2.0f, 5.0f);
-       // }
-       //
+      
           spawnTime -= Time.deltaTime;
 
         if(spawnTime <=0.0f)
         {
              Instantiate(prefab_Brid);
               spawnTime = 2.0f;
+        }
+        if(transform.position.x <= -25.0f)
+        {
+            GameObject.Destroy(this);
         }
     }
 }

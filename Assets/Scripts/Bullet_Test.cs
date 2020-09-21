@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
+using UnityEngine.UI;
 
 
 public class Bullet_Test : MonoBehaviour
@@ -19,13 +20,17 @@ public class Bullet_Test : MonoBehaviour
     private AudioSource audiosource;
     private bool canReload = false;
     private bool gunInHand = false;
+    private GameObject[] bulletImage;
+  
     // Start is called before the first frame update
     void Start()
     {
         audiosource = GetComponent<AudioSource>();
         var desiredCharaterisitcs = UnityEngine.XR.InputDeviceCharacteristics.HeldInHand | UnityEngine.XR.InputDeviceCharacteristics.Left | UnityEngine.XR.InputDeviceCharacteristics.Controller;
         UnityEngine.XR.InputDevices.GetDevicesWithCharacteristics(desiredCharaterisitcs, leftHandControllers);
-       
+        bulletImage = GameObject.FindGameObjectsWithTag("Bullet");
+        Debug.Log(bulletImage.Length);
+      
     }
 
     // Update is called once per frame
@@ -47,7 +52,7 @@ public class Bullet_Test : MonoBehaviour
             canTrigger = true;
         }
 
-        if (primaryButton && canReload)
+        if (gunInHand && primaryButton && canReload)
         {
             Reload();
 
@@ -64,11 +69,12 @@ public class Bullet_Test : MonoBehaviour
 
         if (gunInHand && triggerButton && gunShots > 0 && canTrigger)
         {
-
+            
             audiosource.Play();
             gunShots -= 1;
-           
+            bulletImage[gunShots].GetComponent<Image>().enabled = false;
 
+          
         }
 
 
@@ -79,6 +85,8 @@ public class Bullet_Test : MonoBehaviour
         audiosource.PlayOneShot(reload);
         gunShots = 2;
         canReload = false;
+        bulletImage[0].GetComponent<Image>().enabled = true;
+        bulletImage[1].GetComponent<Image>().enabled = true;
 
     }
     void FixedUpdate()
@@ -116,7 +124,7 @@ public class Bullet_Test : MonoBehaviour
             Rigidbody Remove = hit.transform.GetComponent<Rigidbody>();
             Remove.useGravity = true;
             Remove.isKinematic = false;
-
+            Destroy(hit.transform.GetComponent<Duck>());
             hit.rigidbody.AddForce(-hit.normal * 50);
             
 
